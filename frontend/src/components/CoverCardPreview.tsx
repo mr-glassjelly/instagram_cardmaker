@@ -25,14 +25,14 @@ const L_TOP = 88;
 const L_BOTTOM = 28;
 
 // 1080px 기준 Canvas 텍스트 상수
-// 제목: 30자 ≈ 가로 꽉 참 → (1080-2*72)/30 ≈ 31px
-// 본문: 50자 ≈ 가로 꽉 참 → (1080-2*72)/50 ≈ 19px
+// 제목: ~15자 ≈ 가로 꽉 참 (31*2=62px)
+// 본문: ~25자 ≈ 가로 꽉 참 (19*2=38px)
 const C_PAD = 72;
-const C_TITLE_PX = 31;
-const C_BODY_PX = 19;
-const C_TITLE_LH = 46;
-const C_BODY_LH = 30;
-const C_GAP = 52;
+const C_TITLE_PX = 62;
+const C_BODY_PX = 38;
+const C_TITLE_LH = 88;
+const C_BODY_LH = 58;
+const C_GAP = 64;
 
 const DEFAULT_HSL: [number, number, number] = [300, 30, 70];
 
@@ -110,11 +110,27 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   const lines: string[] = [];
   for (const para of text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n")) {
     if (!para.trim()) { lines.push(""); continue; }
+    const words = para.split(" ");
     let cur = "";
-    for (const ch of para) {
-      const test = cur + ch;
-      if (ctx.measureText(test).width > maxWidth && cur) { lines.push(cur); cur = ch; }
-      else cur = test;
+    for (const word of words) {
+      const candidate = cur ? cur + " " + word : word;
+      if (ctx.measureText(candidate).width > maxWidth && cur) {
+        lines.push(cur);
+        // 단어 하나가 maxWidth를 초과하면 글자 단위로 분할
+        if (ctx.measureText(word).width > maxWidth) {
+          let charLine = "";
+          for (const ch of word) {
+            const t = charLine + ch;
+            if (ctx.measureText(t).width > maxWidth && charLine) { lines.push(charLine); charLine = ch; }
+            else charLine = t;
+          }
+          cur = charLine;
+        } else {
+          cur = word;
+        }
+      } else {
+        cur = candidate;
+      }
     }
     if (cur) lines.push(cur);
   }
@@ -350,7 +366,8 @@ export default function CoverCardPreview({ book, coverUrl, onBack }: Props) {
                       lineHeight: `${sTitleLH}px`,
                       fontWeight: 600,
                       color: textColor,
-                      wordBreak: "break-all",
+                      wordBreak: "keep-all",
+                      overflowWrap: "break-word",
                     }}
                   >
                     {section.title}
@@ -364,7 +381,8 @@ export default function CoverCardPreview({ book, coverUrl, onBack }: Props) {
                           lineHeight: `${sBodyLH}px`,
                           color: textColor,
                           whiteSpace: "pre-wrap",
-                          wordBreak: "break-all",
+                          wordBreak: "keep-all",
+                      overflowWrap: "break-word",
                           opacity: 0.85,
                         }}
                       >
