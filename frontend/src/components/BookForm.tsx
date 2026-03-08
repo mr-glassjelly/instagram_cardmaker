@@ -14,6 +14,9 @@ export default function BookForm() {
   const [currentTitle, setCurrentTitle] = useState("");
   const [currentBody, setCurrentBody] = useState("");
   const [submitted, setSubmitted] = useState<BookInput | null>(null);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [coverError, setCoverError] = useState<string | null>(null);
+  const [coverLoading, setCoverLoading] = useState(false);
 
   const sectionNumber = completedSections.length + 1;
   const isBookInfoFilled = bookTitle.trim() !== "" && bookAuthor.trim() !== "";
@@ -44,6 +47,29 @@ export default function BookForm() {
     setSubmitted({ title: bookTitle.trim(), author: bookAuthor.trim(), sections: allSections });
   }
 
+  async function handleFetchCover() {
+    if (!bookTitle.trim()) return;
+    setCoverLoading(true);
+    setCoverError(null);
+    setCoverUrl(null);
+    try {
+      const res = await fetch(
+        `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(bookTitle)}&maxResults=1`
+      );
+      const data = await res.json();
+      const raw: string | undefined = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+      if (!raw) {
+        setCoverError("표지 이미지를 찾을 수 없어요.");
+      } else {
+        setCoverUrl(raw.replace("http://", "https://").replace("zoom=1", "zoom=3"));
+      }
+    } catch {
+      setCoverError("표지를 불러오는 중 오류가 발생했어요.");
+    } finally {
+      setCoverLoading(false);
+    }
+  }
+
   function handleReset() {
     setSubmitted(null);
     setBookTitle("");
@@ -64,32 +90,76 @@ export default function BookForm() {
         <p className="text-xs font-bold uppercase tracking-widest text-purple-400">
           📚 책 정보
         </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-gray-700" htmlFor="book-title">
-              책 제목
-            </label>
-            <input
-              id="book-title"
-              type="text"
-              value={bookTitle}
-              onChange={(e) => setBookTitle(e.target.value)}
-              placeholder="예: 팀장의 탄생"
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:border-purple-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all"
-            />
+        <div className="flex gap-4">
+          {/* 입력 필드 + 버튼 */}
+          <div className="flex-1 space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700" htmlFor="book-title">
+                책 제목
+              </label>
+              <input
+                id="book-title"
+                type="text"
+                value={bookTitle}
+                onChange={(e) => setBookTitle(e.target.value)}
+                placeholder="예: 팀장의 탄생"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:border-purple-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700" htmlFor="book-author">
+                저자
+              </label>
+              <input
+                id="book-author"
+                type="text"
+                value={bookAuthor}
+                onChange={(e) => setBookAuthor(e.target.value)}
+                placeholder="예: 마이클 왓킨스"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:border-purple-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <button
+                type="button"
+                onClick={handleFetchCover}
+                disabled={!bookTitle.trim() || coverLoading}
+                className="w-full rounded-xl border border-purple-200 bg-purple-50 px-4 py-2.5 text-sm font-medium text-purple-600 hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
+              >
+                {coverLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span
+                      className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-transparent"
+                      style={{ borderTopColor: "#833AB4" }}
+                    />
+                    가져오는 중...
+                  </span>
+                ) : (
+                  "🔍 표지 가져오기"
+                )}
+              </button>
+              {coverError && (
+                <p className="flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-500">
+                  ⚠️ {coverError}
+                </p>
+              )}
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-gray-700" htmlFor="book-author">
-              저자
-            </label>
-            <input
-              id="book-author"
-              type="text"
-              value={bookAuthor}
-              onChange={(e) => setBookAuthor(e.target.value)}
-              placeholder="예: 마이클 왓킨스"
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:border-purple-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all"
-            />
+
+          {/* 표지 이미지 */}
+          <div className="shrink-0 w-28">
+            <p className="mb-1.5 text-sm font-medium text-gray-700">표지</p>
+            <div className="w-28 h-40 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center">
+              {coverUrl ? (
+                <img
+                  src={coverUrl}
+                  alt={`${bookTitle} 표지`}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="text-3xl opacity-30">📖</span>
+              )}
+            </div>
           </div>
         </div>
       </section>
