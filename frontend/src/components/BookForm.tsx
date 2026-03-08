@@ -14,6 +14,7 @@ export default function BookForm() {
   const [currentTitle, setCurrentTitle] = useState("");
   const [currentBody, setCurrentBody] = useState("");
   const [submitted, setSubmitted] = useState<BookInput | null>(null);
+  const [aspectRatio, setAspectRatio] = useState<"1:1" | "3:4" | "4:5">("1:1");
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverError, setCoverError] = useState<string | null>(null);
   const [coverLoading, setCoverLoading] = useState(false);
@@ -44,7 +45,7 @@ export default function BookForm() {
       ...completedSections,
       { id: crypto.randomUUID(), title: currentTitle.trim(), body: currentBody.trim() },
     ];
-    setSubmitted({ title: bookTitle.trim(), author: bookAuthor.trim(), sections: allSections });
+    setSubmitted({ title: bookTitle.trim(), author: bookAuthor.trim(), sections: allSections, aspectRatio });
   }
 
   async function handleFetchCover() {
@@ -254,6 +255,39 @@ export default function BookForm() {
             📋 소문단을 최소 {MIN_SECTIONS}개 입력해야 완료할 수 있어요. (현재 {sectionNumber}개)
           </p>
         )}
+
+        {/* 카드 비율 선택 */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-gray-700">📐 카드 비율</p>
+          <div className="flex gap-2">
+            {(["1:1", "3:4", "4:5"] as const).map((ratio) => {
+              const [w, h] = ratio.split(":").map(Number);
+              const isSelected = aspectRatio === ratio;
+              return (
+                <button
+                  key={ratio}
+                  type="button"
+                  onClick={() => setAspectRatio(ratio)}
+                  className={`flex flex-1 flex-col items-center gap-2 rounded-xl border px-3 py-3 text-xs font-medium transition-all ${
+                    isSelected
+                      ? "border-pink-400 bg-pink-50 text-pink-600 shadow-sm"
+                      : "border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300 hover:bg-white"
+                  }`}
+                >
+                  {/* 비율 시각화 박스 */}
+                  <span
+                    className={`block rounded border-2 ${isSelected ? "border-pink-400 bg-pink-100" : "border-gray-300 bg-gray-200"}`}
+                    style={{
+                      width: `${(w / h) * 32}px`,
+                      height: "32px",
+                    }}
+                  />
+                  {ratio}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <div className="flex gap-2 pt-1">
           {canAddMore && (

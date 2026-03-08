@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { BookInput, SubSection } from "@/lib/types";
+import type { BookInput, SubSection, AspectRatio } from "@/lib/types";
+
+const RATIO_STYLE: Record<AspectRatio, string> = {
+  "1:1": "1 / 1",
+  "3:4": "3 / 4",
+  "4:5": "4 / 5",
+};
 
 // 인스타그램 감성의 카드 배경 (그라데이션 + 색상 쌍)
 const CARD_STYLES = [
@@ -45,6 +51,9 @@ export default function CardPreview({ book, onReset }: CardPreviewProps) {
             《{book.title}》{" "}
             <span className="font-normal text-gray-500">— {book.author}</span>
           </h2>
+          <span className="mt-1 inline-block rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-500">
+            📐 {book.aspectRatio}
+          </span>
         </div>
         <button
           onClick={onReset}
@@ -75,11 +84,12 @@ export default function CardPreview({ book, onReset }: CardPreviewProps) {
               <button
                 key={card.id}
                 onClick={() => setSelectedCard(i)}
-                className={`aspect-square rounded-2xl overflow-hidden transition-all ${
+                className={`rounded-2xl overflow-hidden transition-all ${
                   selectedCard === i
                     ? "ring-2 ring-offset-2 ring-pink-500 shadow-lg scale-[1.02]"
                     : "opacity-80 hover:opacity-100 hover:scale-[1.01]"
                 }`}
+                style={{ aspectRatio: RATIO_STYLE[book.aspectRatio] }}
               >
                 <MockCard card={card} index={i} bookTitle={book.title} total={cards.length} />
               </button>
@@ -87,7 +97,7 @@ export default function CardPreview({ book, onReset }: CardPreviewProps) {
           </div>
 
           {/* 큰 미리보기 */}
-          <div className="overflow-hidden rounded-2xl shadow-xl aspect-square">
+          <div className="overflow-hidden rounded-2xl shadow-xl" style={{ aspectRatio: RATIO_STYLE[book.aspectRatio] }}>
             <MockCard
               card={cards[selectedCard]}
               index={selectedCard}
