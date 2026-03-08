@@ -368,7 +368,7 @@ export default function CoverCardPreview({ book, coverUrl, onBack }: Props) {
                 {/* 오른쪽 아래 코너 그라데이션 */}
                 <div
                   className="absolute inset-0 pointer-events-none"
-                  style={{ background: "radial-gradient(circle 25% at 100% 100%, rgba(0,0,0,0.42) 0%, transparent 100%)" }}
+                  style={{ background: "radial-gradient(ellipse 25% 25% at 100% 100%, rgba(0,0,0,0.42) 0%, transparent 100%)" }}
                 />
                 <div
                   className="absolute inset-0 flex flex-col justify-center"
