@@ -4,8 +4,7 @@ import { useState } from "react";
 import type { SubSection, BookInput } from "@/lib/types";
 import CoverCardPreview from "./CoverCardPreview";
 
-const MIN_SECTIONS = 3;
-const MAX_SECTIONS = 5;
+const MAX_SECTIONS = 6;
 
 export default function BookForm() {
   const [bookTitle, setBookTitle] = useState("");
@@ -22,8 +21,10 @@ export default function BookForm() {
   const sectionNumber = completedSections.length + 1;
   const isBookInfoFilled = bookTitle.trim() !== "" && bookAuthor.trim() !== "";
   const isCurrentFilled = currentTitle.trim() !== "" && currentBody.trim() !== "";
+  const isCurrentEmpty = currentTitle.trim() === "" && currentBody.trim() === "";
+  const isCurrentPartial = !isCurrentFilled && !isCurrentEmpty;
   const canAddMore = sectionNumber < MAX_SECTIONS;
-  const canFinish = isBookInfoFilled && isCurrentFilled && sectionNumber >= MIN_SECTIONS;
+  const canFinish = isBookInfoFilled && !isCurrentPartial;
 
   function handleAddSection() {
     if (!isCurrentFilled) return;
@@ -41,10 +42,9 @@ export default function BookForm() {
 
   function handleFinish() {
     if (!canFinish) return;
-    const allSections: SubSection[] = [
-      ...completedSections,
-      { id: crypto.randomUUID(), title: currentTitle.trim(), body: currentBody.trim() },
-    ];
+    const allSections: SubSection[] = isCurrentFilled
+      ? [...completedSections, { id: crypto.randomUUID(), title: currentTitle.trim(), body: currentBody.trim() }]
+      : [...completedSections];
     setSubmitted({ title: bookTitle.trim(), author: bookAuthor.trim(), sections: allSections, aspectRatio });
   }
 
@@ -240,14 +240,9 @@ export default function BookForm() {
             ⚠️ 책 제목과 저자를 먼저 입력해 주세요.
           </p>
         )}
-        {isBookInfoFilled && !isCurrentFilled && (
-          <p className="flex items-center gap-1.5 rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-500">
-            💡 소문단 제목과 내용을 모두 입력해야 다음으로 넘어갈 수 있어요.
-          </p>
-        )}
-        {isBookInfoFilled && isCurrentFilled && sectionNumber < MIN_SECTIONS && (
-          <p className="flex items-center gap-1.5 rounded-xl bg-purple-50 px-3 py-2 text-xs text-purple-600">
-            📋 소문단을 최소 {MIN_SECTIONS}개 입력해야 완료할 수 있어요. (현재 {sectionNumber}개)
+        {isBookInfoFilled && isCurrentPartial && (
+          <p className="flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-500">
+            ⚠️ 소문단 {currentTitle.trim() === "" ? "제목" : "내용"}을 입력하거나, 입력한 내용을 지우고 완료해 주세요.
           </p>
         )}
 
