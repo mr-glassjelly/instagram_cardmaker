@@ -62,7 +62,8 @@ export default function BookForm() {
       if (!raw) {
         setCoverError("표지 이미지를 찾을 수 없어요.");
       } else {
-        setCoverUrl(raw.replace("http://", "https://").replace("zoom=1", "zoom=3"));
+        const highRes = raw.replace("http://", "https://").replace("zoom=1", "zoom=3");
+        setCoverUrl(`/img-proxy?url=${encodeURIComponent(highRes)}`);
       }
     } catch {
       setCoverError("표지를 불러오는 중 오류가 발생했어요.");
