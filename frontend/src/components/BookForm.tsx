@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { SubSection, BookInput } from "@/lib/types";
-import CardPreview from "./CardPreview";
+import CoverCardPreview from "./CoverCardPreview";
 
 const MIN_SECTIONS = 3;
 const MAX_SECTIONS = 5;
@@ -71,17 +71,12 @@ export default function BookForm() {
     }
   }
 
-  function handleReset() {
+  function handleBack() {
     setSubmitted(null);
-    setBookTitle("");
-    setBookAuthor("");
-    setCompletedSections([]);
-    setCurrentTitle("");
-    setCurrentBody("");
   }
 
   if (submitted) {
-    return <CardPreview book={submitted} onReset={handleReset} />;
+    return <CoverCardPreview book={submitted} coverUrl={coverUrl} onBack={handleBack} />;
   }
 
   return (
