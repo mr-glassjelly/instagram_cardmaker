@@ -187,12 +187,17 @@ function drawContentCard(
   ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, w, h);
 
-  // 오른쪽 아래 코너 그라데이션 (반지름 = 가로의 1/4)
-  const radius = w * 0.25;
-  const grad = ctx.createRadialGradient(w, h, 0, w, h, radius);
-  grad.addColorStop(0, "rgba(0,0,0,0.42)");
-  grad.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = grad;
+  // 아래→위 gradient (높이의 22%, 짧은 변)
+  const g1 = ctx.createLinearGradient(0, h, 0, h * (1 - 0.22));
+  g1.addColorStop(0, "rgba(0,0,0,0.28)");
+  g1.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g1;
+  ctx.fillRect(0, 0, w, h);
+  // 오른쪽→왼쪽 gradient (너비의 40%, 긴 변)
+  const g2 = ctx.createLinearGradient(w, 0, w * (1 - 0.40), 0);
+  g2.addColorStop(0, "rgba(0,0,0,0.28)");
+  g2.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g2;
   ctx.fillRect(0, 0, w, h);
 
   const textColor = getTextColor(bgColor);
@@ -368,7 +373,7 @@ export default function CoverCardPreview({ book, coverUrl, onBack }: Props) {
                 {/* 오른쪽 아래 코너 그라데이션 */}
                 <div
                   className="absolute inset-0 pointer-events-none"
-                  style={{ background: "radial-gradient(ellipse 25% 25% at 100% 100%, rgba(0,0,0,0.42) 0%, transparent 100%)" }}
+                  style={{ background: "linear-gradient(to top, rgba(0,0,0,0.28) 0%, transparent 22%), linear-gradient(to left, rgba(0,0,0,0.28) 0%, transparent 40%)" }}
                 />
                 <div
                   className="absolute inset-0 flex flex-col justify-center"
